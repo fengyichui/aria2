@@ -1211,10 +1211,6 @@ std::shared_ptr<DownloadResult> RequestGroup::createDownloadResult() const
 
 void RequestGroup::reportDownloadFinished()
 {
-  // liqiang+ {
-  std::cout << "\033]2;Finished\007";
-  // }
-
   A2_LOG_NOTICE(fmt(MSG_FILE_DOWNLOAD_COMPLETED,
                     inMemoryDownload()
                         ? getFirstFilePath().c_str()

@@ -41,6 +41,7 @@
 #include <numeric>
 #include <algorithm>
 #include <utility>
+#include <iostream>
 
 #include "BtProgressInfoFile.h"
 #include "RecoverableException.h"
@@ -246,6 +247,18 @@ void notifyDownloadEvent(DownloadEvent event,
   if (SingletonHolder<Notifier>::instance()) {
     SingletonHolder<Notifier>::instance()->notifyDownloadEvent(event, group);
   }
+
+  // liqiang+ {
+  switch(event)
+  {
+    case EVENT_ON_DOWNLOAD_START:       std::cout << "\033]2;↓ Start\007";    break;
+    case EVENT_ON_DOWNLOAD_PAUSE:       std::cout << "\033]2;↓ Pause\007";    break;
+    case EVENT_ON_DOWNLOAD_STOP:        std::cout << "\033]2;↓ Stop\007";     break;
+    case EVENT_ON_DOWNLOAD_COMPLETE:    std::cout << "\033]2;↓ Complete\007"; break;
+    case EVENT_ON_BT_DOWNLOAD_COMPLETE: std::cout << "\033]2;↓ Complete\007"; break;
+    case EVENT_ON_DOWNLOAD_ERROR:       std::cout << "\033]2;↓ Error\007";    break;
+  }
+  // }
 }
 
 } // namespace
