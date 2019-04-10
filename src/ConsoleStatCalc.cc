@@ -148,8 +148,10 @@ void printProgressCompact(ColorizedStream& o, const DownloadEngine* e,
     o << colors::magenta << "]" << colors::clear;
 
     // liqiang+ {
+    int nDownload = e->getRequestGroupMan()->getRequestGroups().size();
+    int nWait = e->getRequestGroupMan()->getReservedGroups().size();
     std::cout << "\033]2;";
-    std::cout << "+" << e->getRequestGroupMan()->getRequestGroups().size();
+    std::cout << "+" << (nDownload+nWait);
     std::cout << " " << sizeFormatter(dl) << "B↓";
     if (ul) std::cout << " " << sizeFormatter(ul) << "B↑";
     std::cout << "\007";
