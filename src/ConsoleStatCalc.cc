@@ -150,10 +150,9 @@ void printProgressCompact(ColorizedStream& o, const DownloadEngine* e,
     // liqiang+ {
     int nDownload = e->getRequestGroupMan()->getRequestGroups().size();
     int nWait = e->getRequestGroupMan()->getReservedGroups().size();
-    std::cout << "\033]2;";
+    std::cout << "\033]2;↓ ";
     std::cout << "+" << (nDownload+nWait);
-    std::cout << " " << sizeFormatter(dl) << "B↓";
-    if (ul) std::cout << " " << sizeFormatter(ul) << "B↑";
+    std::cout << " " << sizeFormatter(dl) << "B";
     std::cout << "\007";
     // }
   }
@@ -213,13 +212,11 @@ void printProgress(ColorizedStream& o, const std::shared_ptr<RequestGroup>& rg,
   o << colors::magenta << "]" << colors::clear;
 
   // liqiang+ {
-  std::cout << "\033]2;";
+  std::cout << "\033]2;↓ ";
   if (!rg->downloadFinished())
-    std::cout << sizeFormatter(stat.downloadSpeed) << "B↓ ";
-  if (stat.sessionUploadLength > 0)
-    std::cout << sizeFormatter(stat.uploadSpeed) << "B↑ ";
+    std::cout << sizeFormatter(stat.downloadSpeed) << "B";
   if (eta > 0)
-    std::cout << util::secfmt(eta);
+    std::cout << " " << util::secfmt(eta);
   std::cout << "\007";
   // }
 }
