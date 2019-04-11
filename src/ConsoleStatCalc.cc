@@ -153,7 +153,7 @@ void printProgressCompact(ColorizedStream& o, const DownloadEngine* e,
   size_t cnt = 0;
   const size_t MAX_ITEM = 5;
   int percentage = -1; // liqiang+
-  bool seed = false; // liqiang+
+  bool all_seed = true; // liqiang+
   for (auto i = groups.begin(), eoi = groups.end(); i != eoi && cnt < MAX_ITEM;
        ++i, ++cnt) {
     const std::shared_ptr<RequestGroup>& rg = *i;
@@ -163,12 +163,9 @@ void printProgressCompact(ColorizedStream& o, const DownloadEngine* e,
     printSizeProgress(o, rg, stat, sizeFormatter);
     o << colors::magenta << "]" << colors::clear;
     // liqiang+ {
-    if (rg->isSeeder())
+    if (!rg->isSeeder())
     {
-      seed = true;
-    }
-    else
-    {
+      all_seed = false;
       if(rg->getTotalLength() > 0)
       {
         int pt = 100 * rg->getCompletedLength() / rg->getTotalLength();
@@ -187,17 +184,12 @@ void printProgressCompact(ColorizedStream& o, const DownloadEngine* e,
   int nWait = e->getRequestGroupMan()->getReservedGroups().size();
   std::cout << "\033]2;↓ ";
   std::cout << "+" << (nDownload+nWait);
-  if (e->getRequestGroupMan()->downloadFinished())
-  {
-    if (seed)
-      std::cout << " Seed";
-    else
-      std::cout << " Complete";
-  }
-  else
-  {
+  if (all_seed)
+    std::cout << " Seed";
+  else if (!e->getRequestGroupMan()->downloadFinished())
     std::cout << " " << sizeFormatter(dl) << "B";
-  }
+  else
+    std::cout << " Complete";
   if (percentage != -1)
     std::cout << " " << percentage << "%";
   std::cout << "\007";
@@ -246,17 +238,12 @@ void printProgress(ColorizedStream& o, const std::shared_ptr<RequestGroup>& rg,
   if (!rg->isSeeder() && rg->getTotalLength()>0)
     percentage = 100 * rg->getCompletedLength() / rg->getTotalLength();
   std::cout << "\033]2;↓ ";
-  if (rg->downloadFinished())
-  {
-    if (rg->isSeeder())
-      std::cout << " Seed";
-    else
-      std::cout << " Complete";
-  }
-  else
-  {
+  if (rg->isSeeder())
+    std::cout << " Seed";
+  else if (!rg->downloadFinished())
     std::cout << sizeFormatter(stat.downloadSpeed) << "B";
-  }
+  else
+    std::cout << " Complete";
   if (percentage != -1)
     std::cout << " " << percentage << "%";
   if (eta > 0)
