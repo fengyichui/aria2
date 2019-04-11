@@ -136,9 +136,10 @@ namespace {
 void printProgressCompact(ColorizedStream& o, const DownloadEngine* e,
                           const SizeFormatter& sizeFormatter)
 {
+  int dl; // liqiang+
   if (!e->getRequestGroupMan()->downloadFinished()) {
     NetStat& netstat = e->getRequestGroupMan()->getNetStat();
-    int dl = netstat.calculateDownloadSpeed();
+    dl = netstat.calculateDownloadSpeed(); // liqiang<>
     int ul = netstat.calculateUploadSpeed();
     o << colors::magenta << "[" << colors::clear << "DL:" << colors::green
       << sizeFormatter(dl) << "B" << colors::clear;
@@ -146,20 +147,13 @@ void printProgressCompact(ColorizedStream& o, const DownloadEngine* e,
       o << " UL:" << colors::cyan << sizeFormatter(ul) << "B" << colors::clear;
     }
     o << colors::magenta << "]" << colors::clear;
-
-    // liqiang+ {
-    int nDownload = e->getRequestGroupMan()->getRequestGroups().size();
-    int nWait = e->getRequestGroupMan()->getReservedGroups().size();
-    std::cout << "\033]2;↓ ";
-    std::cout << "+" << (nDownload+nWait);
-    std::cout << " " << sizeFormatter(dl) << "B";
-    std::cout << "\007";
-    // }
   }
 
   const RequestGroupList& groups = e->getRequestGroupMan()->getRequestGroups();
   size_t cnt = 0;
   const size_t MAX_ITEM = 5;
+  int percentage = -1; // liqiang+
+  bool seed = false; // liqiang+
   for (auto i = groups.begin(), eoi = groups.end(); i != eoi && cnt < MAX_ITEM;
        ++i, ++cnt) {
     const std::shared_ptr<RequestGroup>& rg = *i;
@@ -168,10 +162,46 @@ void printProgressCompact(ColorizedStream& o, const DownloadEngine* e,
       << GroupId::toAbbrevHex(rg->getGID()) << " ";
     printSizeProgress(o, rg, stat, sizeFormatter);
     o << colors::magenta << "]" << colors::clear;
+    // liqiang+ {
+    if (rg->isSeeder())
+    {
+      seed = true;
+    }
+    else
+    {
+      if(rg->getTotalLength() > 0)
+      {
+        int pt = 100 * rg->getCompletedLength() / rg->getTotalLength();
+        if(pt > percentage)
+          percentage = pt;
+      }
+    }
+    // }
   }
   if (cnt < groups.size()) {
     o << "(+" << groups.size() - cnt << ")";
   }
+
+  // liqiang+ {
+  int nDownload = e->getRequestGroupMan()->getRequestGroups().size();
+  int nWait = e->getRequestGroupMan()->getReservedGroups().size();
+  std::cout << "\033]2;↓ ";
+  std::cout << "+" << (nDownload+nWait);
+  if (e->getRequestGroupMan()->downloadFinished())
+  {
+    if (seed)
+      std::cout << " Seed";
+    else
+      std::cout << " Complete";
+  }
+  else
+  {
+    std::cout << " " << sizeFormatter(dl) << "B";
+  }
+  if (percentage != -1)
+    std::cout << " " << percentage << "%";
+  std::cout << "\007";
+  // }
 }
 } // namespace
 
@@ -212,9 +242,23 @@ void printProgress(ColorizedStream& o, const std::shared_ptr<RequestGroup>& rg,
   o << colors::magenta << "]" << colors::clear;
 
   // liqiang+ {
+  int percentage = -1;
+  if (!rg->isSeeder() && rg->getTotalLength()>0)
+    percentage = 100 * rg->getCompletedLength() / rg->getTotalLength();
   std::cout << "\033]2;↓ ";
-  if (!rg->downloadFinished())
+  if (rg->downloadFinished())
+  {
+    if (rg->isSeeder())
+      std::cout << " Seed";
+    else
+      std::cout << " Complete";
+  }
+  else
+  {
     std::cout << sizeFormatter(stat.downloadSpeed) << "B";
+  }
+  if (percentage != -1)
+    std::cout << " " << percentage << "%";
   if (eta > 0)
     std::cout << " " << util::secfmt(eta);
   std::cout << "\007";
