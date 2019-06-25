@@ -1,0 +1,5 @@
+#!/bin/bash
+set -e
+./configure --with-ca-bundle=/etc/pki/tls/certs/ca-bundle.crt
+make -j
+make install-strip DESTDIR=$PWD/dist-bin/ prefix=/usr
