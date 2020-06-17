@@ -212,6 +212,7 @@ void RequestGroup::closeFile()
 {
   if (pieceStorage_) {
     pieceStorage_->flushWrDiskCacheEntry(true);
+    pieceStorage_->getDiskAdaptor()->flushOSBuffers();
     pieceStorage_->getDiskAdaptor()->closeFile();
   }
 }
@@ -1293,6 +1294,7 @@ void RequestGroup::saveControlFile() const
   if (saveControlFile_) {
     if (pieceStorage_) {
       pieceStorage_->flushWrDiskCacheEntry(false);
+      pieceStorage_->getDiskAdaptor()->flushOSBuffers();
     }
     progressInfoFile_->save();
   }
