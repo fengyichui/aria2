@@ -1,0 +1,5 @@
+#!/bin/bash
+set -e
+./configure --with-gnutls --without-openssl --with-ca-bundle=/etc/ssl/certs/ca-certificates.crt
+make -j
+make install-strip DESTDIR=$PWD/dist-bin/
